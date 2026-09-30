@@ -169,7 +169,12 @@ function err(error: unknown) {
 function BrandMark({ large = false }: { large?: boolean }) {
   return (
     <div className={`brandmark ${large ? "large" : ""}`}>
-      <Flame size={large ? 32 : 21} fill="currentColor" />
+      <img
+        src="/redleads-icon.svg"
+        alt=""
+        width={large ? 48 : 38}
+        height={large ? 48 : 38}
+      />
       <span>
         Red<span>Leads</span>
       </span>
@@ -330,6 +335,9 @@ function ThemeButton() {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
     localStorage.setItem("redleads-theme", dark ? "dark" : "light");
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", dark ? "#0b0d1c" : "#f4f7fc");
   }, [dark]);
   return (
     <button
@@ -830,9 +838,13 @@ function TopBar() {
   return (
     <header className="topbar">
       <Link to="/" className="topbrand">
-        <span className="topbrand-tile">
-          <Flame size={20} fill="currentColor" />
-        </span>
+        <img
+          className="topbrand-tile"
+          src="/redleads-icon.svg"
+          alt=""
+          width="38"
+          height="38"
+        />
         RedLeads
       </Link>
       <div className="top-actions">
@@ -985,6 +997,12 @@ function Home() {
             Analytics
           </button>
         </Glass>
+        <Link to="/log" className="log-lead-cta">
+          <span>
+            <Mic size={22} />
+          </span>
+          Log lead <ArrowRight size={19} />
+        </Link>
         {tab === "active" ? (
           <>
             <div className="list-head">
@@ -1136,12 +1154,6 @@ function Home() {
         ) : (
           <AnalyticsTab leads={leads} />
         )}
-        <Link to="/log" className="floating-cta">
-          <span>
-            <Mic size={22} />
-          </span>
-          Log lead <ArrowRight size={19} />
-        </Link>
       </main>
       {selected && (
         <LeadSheet
@@ -1194,13 +1206,13 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
             onClick={() => setMessageOpen(true)}
             aria-label={`Draft a message for ${lead.customer_name}`}
           >
-            <MessageCircle size={18} />
+            <MessageCircle size={18} /> <span>Message</span>
           </button>
           <a
             href={`tel:${lead.phone}`}
             aria-label={`Call ${lead.customer_name}`}
           >
-            <Phone size={18} />
+            <Phone size={18} /> <span>Call</span>
           </a>
         </div>
       </Glass>
@@ -1536,45 +1548,45 @@ function LeadSheet({
             <X size={18} />
           </button>
         </div>
+        <div className="sheet-actions">
+          <a
+            className="action-pill"
+            href={`tel:${lead.phone}`}
+            onClick={() =>
+              void logActivity(lead, "call", "Opened phone dialer")
+            }
+          >
+            <Phone size={17} /> Call now
+          </a>
+          <button
+            className="action-pill"
+            onClick={() => setMessageOpen(true)}
+          >
+            <MessageCircle size={17} /> Message
+          </button>
+          <button
+            className="action-pill"
+            onClick={() => {
+              onClose();
+              navigate(`/leads/${lead.id}/edit`);
+            }}
+          >
+            <Pencil size={16} /> Edit
+          </button>
+          <button
+            className="action-pill"
+            disabled={scoring}
+            onClick={() => {
+              void refreshScores([lead.id]).then((ok) => {
+                if (ok)
+                  void logActivity(lead, "rescore", "Heat score refreshed");
+              });
+            }}
+          >
+            <Flame size={16} /> Re-score
+          </button>
+        </div>
         <div className="sheet-scroll">
-          <div className="sheet-actions">
-            <a
-              className="action-pill"
-              href={`tel:${lead.phone}`}
-              onClick={() =>
-                void logActivity(lead, "call", "Opened phone dialer")
-              }
-            >
-              <Phone size={17} /> Call now
-            </a>
-            <button
-              className="action-pill"
-              onClick={() => setMessageOpen(true)}
-            >
-              <MessageCircle size={17} /> Message
-            </button>
-            <button
-              className="action-pill"
-              onClick={() => {
-                onClose();
-                navigate(`/leads/${lead.id}/edit`);
-              }}
-            >
-              <Pencil size={16} /> Edit
-            </button>
-            <button
-              className="action-pill"
-              disabled={scoring}
-              onClick={() => {
-                void refreshScores([lead.id]).then((ok) => {
-                  if (ok)
-                    void logActivity(lead, "rescore", "Heat score refreshed");
-                });
-              }}
-            >
-              <Flame size={16} /> Re-score
-            </button>
-          </div>
           <Glass className="insight-card">
             <div className="eyebrow">
               <Sparkles size={14} /> HEAT INSIGHT

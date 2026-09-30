@@ -39,6 +39,10 @@ body {
   background: var(--background);
   min-width: 320px;
 }
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
 button,
 input,
 textarea,
@@ -109,6 +113,7 @@ textarea {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  min-height: 100dvh;
   max-width: 704px;
   padding: 0 16px;
   margin: auto;
@@ -168,13 +173,15 @@ textarea {
 .brandmark {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-weight: 800;
   letter-spacing: -0.055em;
   font-size: 22px;
 }
-.brandmark > svg {
-  color: #8070ff;
+.brandmark > img {
+  display: block;
+  flex: none;
+  border-radius: 12px;
 }
 .brandmark > span > span {
   color: #8b68f2;
@@ -183,18 +190,19 @@ textarea {
   font-size: 32px;
   justify-content: center;
 }
-.brandmark.large > svg {
-  width: 36px;
-  height: 36px;
+.brandmark.large > img {
+  width: 48px;
+  height: 48px;
 }
 .topbar {
   position: sticky;
   top: 0;
   z-index: 15;
   margin: 0 -16px;
-  padding: calc(max(env(safe-area-inset-top), 12px)) 17px 12px;
-  background: color-mix(in srgb, var(--background) 72%, transparent);
+  padding: calc(max(env(safe-area-inset-top, 0px), 12px) + 8px) 17px 12px;
+  background: color-mix(in srgb, var(--background) 93%, transparent);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -208,14 +216,10 @@ textarea {
   letter-spacing: -0.05em;
 }
 .topbrand-tile {
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
-  background: linear-gradient(140deg, #3b82f6, #7c3aed);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 7px 18px #7c3aed50;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px #3b82f650;
 }
 .top-actions {
   display: flex;
@@ -248,7 +252,7 @@ textarea {
   padding: 0;
 }
 .page {
-  padding: 19px 0 140px;
+  padding: 19px 0 calc(32px + env(safe-area-inset-bottom, 0px));
 }
 .page h1 {
   font-size: clamp(33px, 8vw, 51px);
@@ -425,22 +429,30 @@ textarea {
   color: var(--muted-text);
 }
 .search-toolbar {
-  height: 50px;
-  border-radius: 99px;
+  min-height: 56px;
+  border-radius: 20px;
   margin-bottom: 11px;
-  padding: 0 13px;
-  display: flex;
+  padding: 5px 8px 5px 15px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto 42px;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   color: var(--muted-text);
 }
-.search-toolbar input {
+.search-toolbar:focus-within {
+  border-color: color-mix(in srgb, var(--primary) 60%, transparent);
+}
+.search-toolbar input:not([type="range"]) {
   border: 0;
   outline: 0;
-  background: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  width: 100%;
   min-width: 0;
-  flex: 1;
-  font-size: 13px;
+  padding: 8px 0;
+  margin: 0;
+  font-size: 16px;
 }
 .search-toolbar select,
 .search-toolbar button {
@@ -448,14 +460,21 @@ textarea {
   outline: 0;
   background: none;
   color: var(--foreground);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
+}
+.search-toolbar select {
+  max-width: 108px;
+  min-height: 44px;
+  padding: 0 3px;
 }
 .search-toolbar button {
   position: relative;
   display: grid;
   place-items: center;
-  padding: 5px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
 }
 .search-toolbar button i {
   width: 6px;
@@ -506,10 +525,9 @@ textarea {
   gap: 11px;
 }
 .lead-card {
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
   border-radius: 25px;
   transition: transform 0.2s;
 }
@@ -522,6 +540,7 @@ textarea {
   gap: 12px;
   min-width: 0;
   flex: 1;
+  width: 100%;
   background: none;
   border: 0;
   color: var(--foreground);
@@ -577,6 +596,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: wrap;
 }
 .lead-meta > span {
   width: 22px;
@@ -604,20 +624,26 @@ textarea {
   color: #ef79b1;
 }
 .lead-actions-mini {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 .lead-actions-mini button,
 .lead-actions-mini a {
-  width: 37px;
-  height: 37px;
-  border-radius: 50%;
+  min-width: 0;
+  min-height: 44px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--card);
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   color: var(--foreground);
+  font-size: 12px;
+  font-weight: 700;
 }
 .lead-actions-mini a {
   background: linear-gradient(110deg, #3b82f6, #7c3aed);
@@ -693,33 +719,31 @@ textarea {
   color: #fff;
   box-shadow: 0 10px 25px #7c3aed40;
 }
-.floating-cta {
-  position: fixed;
-  z-index: 12;
-  bottom: max(20px, env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  height: 64px;
-  padding: 7px 22px 7px 7px;
+.log-lead-cta {
+  width: 100%;
+  min-height: 58px;
+  margin: -7px 0 22px;
+  padding: 7px 18px 7px 7px;
   display: flex;
   align-items: center;
-  gap: 13px;
-  border-radius: 99px;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 20px;
   background: linear-gradient(100deg, #3b82f6, #7c3aed);
   color: #fff;
   font-weight: 800;
   font-size: 15px;
   white-space: nowrap;
-  box-shadow: 0 15px 35px #7c3aed70;
+  box-shadow: 0 12px 30px -13px #7c3aedb0;
   border: 1px solid #ffffff38;
   transition: transform 0.2s;
 }
-.floating-cta:hover {
-  transform: translateX(-50%) scale(1.04);
+.log-lead-cta:hover {
+  filter: brightness(1.08);
 }
-.floating-cta span {
-  width: 48px;
-  height: 48px;
+.log-lead-cta span {
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: #ffffff30;
   display: grid;
@@ -842,7 +866,8 @@ textarea {
 }
 .lead-sheet {
   width: min(704px, 100%);
-  max-height: 91vh;
+  max-height: calc(100vh - max(env(safe-area-inset-top, 0px), 8px) - 8px);
+  max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 8px) - 8px);
   background: color-mix(in srgb, var(--background) 90%, transparent);
   backdrop-filter: blur(30px);
   border: 1px solid var(--border);
@@ -866,6 +891,7 @@ textarea {
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  flex: none;
 }
 .sheet-person {
   display: flex;
@@ -886,27 +912,34 @@ textarea {
 }
 .sheet-scroll {
   overflow-y: auto;
-  padding: 0 17px max(env(safe-area-inset-bottom), 24px);
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 17px calc(max(env(safe-area-inset-bottom, 0px), 16px) + 16px);
   display: grid;
   gap: 12px;
+  align-content: start;
 }
 .sheet-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 0 17px 12px;
+  flex: none;
+  border-bottom: 1px solid var(--border);
 }
 .action-pill {
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--card);
   color: var(--foreground);
-  padding: 10px 13px;
+  min-height: 44px;
+  padding: 9px 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -1067,12 +1100,14 @@ mark {
 }
 .dialog-backdrop {
   align-items: center;
-  padding: 16px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
   z-index: 50;
 }
 .message-dialog {
   width: min(500px, 100%);
   padding: 19px;
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
 }
 .dialog-head {
   display: flex;
@@ -1128,6 +1163,7 @@ mark {
 }
 .wizard {
   padding-top: 14px;
+  padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
 }
 .wizard-header > .icon-glass {
   margin-bottom: 21px;
@@ -1675,6 +1711,7 @@ textarea {
 }
 .loading-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1684,11 +1721,12 @@ textarea {
 }
 .auth-layout {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 30px 0;
+  padding: calc(30px + env(safe-area-inset-top, 0px)) 0 calc(30px + env(safe-area-inset-bottom, 0px));
 }
 .auth-layout > .brandmark {
   margin-bottom: 25px;
@@ -1751,6 +1789,7 @@ textarea {
 }
 .welcome {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -1846,18 +1885,10 @@ textarea {
 }
 @media (max-width: 520px) {
   .lead-card {
-    padding: 13px;
+    padding: 15px;
   }
   .lead-card-main {
-    gap: 8px;
-  }
-  .lead-actions-mini {
-    gap: 3px;
-  }
-  .lead-actions-mini button,
-  .lead-actions-mini a {
-    width: 33px;
-    height: 33px;
+    gap: 12px;
   }
   .lead-meta b {
     display: none;
@@ -1882,6 +1913,15 @@ textarea {
     font-size: 28px;
   }
 }
+@media (max-width: 380px) {
+  .topbar { padding-left: 12px; padding-right: 12px; }
+  .topbrand { font-size: 17px; }
+  .top-actions { gap: 5px; }
+  .glass-pill { padding: 0 10px; }
+  .sheet-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .search-toolbar { grid-template-columns: 18px minmax(0, 1fr) 72px 38px; gap: 5px; padding-left: 10px; }
+  .search-toolbar select { max-width: 72px; }
+}
 @media (min-width: 768px) {
   .shell {
     padding: 0 22px;
@@ -1905,4 +1945,5 @@ textarea {
     padding-left: 25px;
     padding-right: 25px;
   }
+  .sheet-actions { padding-left: 25px; padding-right: 25px; }
 }

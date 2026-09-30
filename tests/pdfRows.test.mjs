@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { supportedCodesFromPage } from '../src/pdfRows.ts';
-import { offerLineOnePrice, offerSourceGroup } from '../src/domain.ts';
+import { offerLineOnePrice, offerMatchesLead, offerSourceGroup } from '../src/domain.ts';
 
 test('reads an unfamiliar data plan code and rejects Basic and tablet rows', async () => {
   const pdf = await PDFDocument.create();
@@ -39,4 +39,13 @@ test('heat insight displays the Line 1 net price without stacking AutoPay or XSe
     '$65/mo',
   );
   assert.equal(offerLineOnePrice({ pricing: 'XSell $50; Line 2 $40' }), null);
+});
+
+test('a lead interested in both brands can match either brand offer', () => {
+  const lead = { brand: 'both', services: ['byod'], customer_type: ['consumer'], transcript: '' };
+  const offer = { title: 'BYOD 80GB', description: '80GB data plan', services: ['byod'], customer_segments: [], valid_until: '' };
+  assert.equal(offerMatchesLead({ ...offer, brand: 'bell' }, lead), true);
+  assert.equal(offerMatchesLead({ ...offer, brand: 'virgin' }, lead), true);
+  assert.equal(offerMatchesLead({ ...offer, brand: 'both' }, lead), true);
+  assert.equal(offerMatchesLead({ ...offer, brand: 'virgin' }, { ...lead, brand: 'bell' }), false);
 });

@@ -34,12 +34,19 @@
 }
 html {
   background: var(--screen-background);
+  overscroll-behavior-y: none;
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
 }
 body {
   margin: 0;
   color: var(--foreground);
   background: var(--screen-background);
   min-width: 320px;
+  min-height: 100vh;
+  min-height: 100svh;
+  overscroll-behavior-y: none;
+  touch-action: pan-x pan-y;
 }
 #root {
   min-height: 100vh;
@@ -53,6 +60,11 @@ select {
 }
 button {
   cursor: pointer;
+}
+button,
+a,
+select {
+  touch-action: manipulation;
 }
 button:disabled {
   cursor: not-allowed;
@@ -75,7 +87,7 @@ textarea {
 }
 .app-background {
   position: fixed;
-  inset: 0;
+  inset: -1px 0 -160px;
   overflow: hidden;
   pointer-events: none;
   background: var(--screen-background);
@@ -724,7 +736,7 @@ textarea {
   position: fixed;
   z-index: 12;
   left: 50%;
-  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  bottom: max(4px, env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   min-height: 64px;
   width: max-content;
@@ -1170,14 +1182,20 @@ mark {
   padding-top: 14px;
   padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
 }
+.wizard-header {
+  text-align: center;
+}
 .wizard-header > .icon-glass {
+  display: flex;
+  margin-right: auto;
   margin-bottom: 21px;
 }
 .step-bars {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  margin-bottom: 23px;
+  width: min(420px, 100%);
+  margin: 0 auto 23px;
 }
 .step-bars span {
   height: 5px;
@@ -1210,6 +1228,19 @@ mark {
 .form-stack {
   display: grid;
   gap: 14px;
+}
+.contact-step .form-stack {
+  width: min(420px, 100%);
+  margin-inline: auto;
+}
+.contact-step label,
+.contact-step input {
+  text-align: center;
+}
+.brand-help {
+  color: var(--muted-text);
+  font-size: 12px;
+  margin: -7px 0 12px;
 }
 label {
   display: block;
@@ -1889,6 +1920,17 @@ textarea {
   opacity: 1;
 }
 @media (max-width: 520px) {
+  .auth-layout {
+    min-height: 100svh;
+    justify-content: flex-start;
+    padding-top: calc(52px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+  input:not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
   .lead-card {
     padding: 15px;
   }

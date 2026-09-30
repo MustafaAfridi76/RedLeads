@@ -83,7 +83,7 @@ export function asLead(id: string, data: DocumentData): Lead {
     customer_name: data.customer_name || data.name || "",
     phone: data.phone || "",
     email: data.email || "",
-    brand: data.brand === "virgin" ? "virgin" : "bell",
+    brand: data.brand === "virgin" || data.brand === "both" ? data.brand : "bell",
     services: Array.isArray(data.services) ? data.services : legacyServices,
     customer_type: Array.isArray(data.customer_type)
       ? data.customer_type

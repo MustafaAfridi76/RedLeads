@@ -114,6 +114,7 @@ import {
   type Offer,
   type OfferBrand,
   type OfferInput,
+  type SelectableBrand,
   type Service,
 } from "./domain";
 import {
@@ -899,7 +900,7 @@ function Home() {
               `${l.customer_name} ${l.transcript} ${l.heat_reason}`
                 .toLowerCase()
                 .includes(q.toLowerCase())) &&
-            (brand === "all" || l.brand === brand) &&
+            (brand === "all" || l.brand === "both" || l.brand === brand) &&
             (service === "all" || l.services.includes(service)) &&
             (tier === "all" || heatTier(l.heat_score) === tier),
         )
@@ -1772,11 +1773,12 @@ function LeadSheet({
     </div>
   );
 }
-const emptyLead = (): LeadInput => ({
+type LeadDraft = Omit<LeadInput, "brand"> & { brand: Brand | "" };
+const emptyLead = (): LeadDraft => ({
   customer_name: "",
   phone: "",
   email: "",
-  brand: "bell",
+  brand: "",
   services: [],
   customer_type: [],
   transcript: "",
@@ -1803,9 +1805,8 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
   const navigate = useNavigate();
   const existing = edit ? leads.find((l) => l.id === id) : undefined;
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<LeadInput>(emptyLead);
+  const [form, setForm] = useState<LeadDraft>(emptyLead);
   const [busy, setBusy] = useState(false);
-  const [savingPhase, setSavingPhase] = useState<"saving" | "scoring">("saving");
   const [voiceEdit, setVoiceEdit] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -1841,6 +1842,19 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
         : [...current.services, id],
     }));
   }
+  function toggleBrand(id: SelectableBrand) {
+    setForm((current) => ({
+      ...current,
+      brand:
+        current.brand === "both"
+          ? id === "bell" ? "virgin" : "bell"
+          : current.brand === id
+            ? ""
+            : current.brand === ""
+              ? id
+              : "both",
+    }));
+  }
   function toggleType(id: CustomerType) {
     setForm((current) => ({
       ...current,
@@ -1849,30 +1863,44 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
         : [...current.customer_type, id],
     }));
   }
+  function goToStep(next: number) {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    window.scrollTo(0, 0);
+    setStep(next);
+  }
   async function save() {
+    const { brand } = form;
+    if (!brand) return;
+    const input: LeadInput = { ...form, brand };
     setBusy(true);
-    setSavingPhase("saving");
     setError("");
     try {
-      let savedLead: Lead;
+      let loadSavedLead: () => Promise<Lead>;
       if (edit && existing) {
-        await updateLead(existing, form);
-        savedLead = { ...existing, ...form, scored_date: "" };
+        await updateLead(existing, input);
+        loadSavedLead = async () => ({ ...existing, ...input, scored_date: "" });
       } else {
-        const ref = await createLead(form);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) throw new Error("Saved lead could not be loaded for scoring.");
-        savedLead = asLead(snap.id, snap.data());
+        const ref = await createLead(input);
+        loadSavedLead = async () => {
+          const snap = await getDoc(ref);
+          if (!snap.exists()) throw new Error("Saved lead could not be loaded for scoring.");
+          return asLead(snap.id, snap.data());
+        };
       }
-      setSavingPhase("scoring");
-      try {
-        const scored = await scoreLeads([savedLead], offers);
-        if (scored !== 1) throw new Error("AI did not return a score for this lead.");
-        notify(edit ? "Lead updated and re-scored." : "Lead logged and scored.");
-      } catch (cause) {
-        notify(`Lead saved, but scoring failed: ${err(cause)}`, "error");
-      }
-      navigate("/");
+      notify(edit ? "Lead updated. Updating its heat score…" : "Lead saved. Scoring in the background…");
+      navigate("/", { replace: true });
+      window.setTimeout(() => {
+        void (async () => {
+          try {
+            const savedLead = await loadSavedLead();
+            const scored = await scoreLeads([savedLead], offers);
+            if (scored !== 1) throw new Error("AI did not return a score for this lead.");
+            notify(edit ? "Lead updated and re-scored." : "Lead logged and scored.");
+          } catch (cause) {
+            notify(`Lead saved, but scoring failed: ${err(cause)}`, "error");
+          }
+        })();
+      }, 0);
     } catch (cause) {
       setError(err(cause));
     } finally {
@@ -1896,7 +1924,7 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
         <div className="wizard-header">
           <button
             className="icon-glass"
-            onClick={() => (step ? setStep(step - 1) : navigate("/"))}
+            onClick={() => (step ? goToStep(step - 1) : navigate("/"))}
             aria-label="Go back"
           >
             <ArrowLeft size={20} />
@@ -1915,7 +1943,7 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            className="wizard-content"
+            className={`wizard-content ${step === 0 ? "contact-step" : ""}`}
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
@@ -1926,7 +1954,6 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
                 <label>
                   Customer name <b>*</b>
                   <input
-                    autoFocus
                     value={form.customer_name}
                     onChange={(e) =>
                       setForm({ ...form, customer_name: e.target.value })
@@ -1946,31 +1973,23 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
                     placeholder="(555) 000-0000"
                   />
                 </label>
-                <label>
-                  Email <span>Optional</span>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                    placeholder="sarah@example.com"
-                  />
-                </label>
               </div>
             )}
             {step === 1 && (
               <>
                 <h3>Choose a brand</h3>
+                <p className="brand-help">Select Bell, Virgin Plus, or both.</p>
                 <div className="brand-tiles">
                   {BRANDS.map((b) => (
                     <button
+                      type="button"
                       key={b.id}
-                      className={`brand-tile ${b.id} ${form.brand === b.id ? "selected" : ""}`}
-                      onClick={() => setForm({ ...form, brand: b.id })}
+                      className={`brand-tile ${b.id} ${form.brand === b.id || form.brand === "both" ? "selected" : ""}`}
+                      aria-pressed={form.brand === b.id || form.brand === "both"}
+                      onClick={() => toggleBrand(b.id)}
                     >
                       {b.label}
-                      {form.brand === b.id && <Check size={19} />}
+                      {(form.brand === b.id || form.brand === "both") && <Check size={19} />}
                     </button>
                   ))}
                 </div>
@@ -2134,10 +2153,10 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
         <div className="wizard-footer">
           <GradientButton
             disabled={!canNext || busy}
-            onClick={() => (step < 3 ? setStep(step + 1) : void save())}
+            onClick={() => (step < 3 ? goToStep(step + 1) : void save())}
           >
             {busy
-              ? savingPhase === "scoring" ? "Re-scoring…" : "Saving…"
+              ? "Saving…"
               : step < 3
                 ? step === 2 && !form.transcript
                   ? "Skip for now"

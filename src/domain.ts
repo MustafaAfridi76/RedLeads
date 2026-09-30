@@ -1,7 +1,8 @@
 import type { Timestamp } from "firebase/firestore";
 
-export type Brand = "bell" | "virgin";
-export type OfferBrand = Brand | "both";
+export type Brand = "bell" | "virgin" | "both";
+export type OfferBrand = Brand;
+export type SelectableBrand = Exclude<Brand, "both">;
 export type Service =
   "internet" | "byod" | "phone" | "multiline" | "subscription" | "giftcard";
 export type CustomerType =
@@ -95,7 +96,7 @@ export const CUSTOMER_TYPES: { id: CustomerType; label: string }[] = [
   { id: "student", label: "Student" },
   { id: "p2p", label: "P2P" },
 ];
-export const BRANDS: { id: Brand; label: string }[] = [
+export const BRANDS: { id: SelectableBrand; label: string }[] = [
   { id: "bell", label: "Bell" },
   { id: "virgin", label: "Virgin Plus" },
 ];
@@ -210,7 +211,7 @@ export function offerMatchesLead(offer: Offer, lead: Lead) {
   return isSupportedOffer(offer) &&
     (!/mobile internet/i.test(offer.title) || /mobile internet|hotspot|data[- ]only/i.test(lead.transcript)) &&
     (!offer.valid_until || offer.valid_until >= todayStr()) &&
-    (offer.brand === 'both' || offer.brand === lead.brand) &&
+    (offer.brand === 'both' || lead.brand === 'both' || offer.brand === lead.brand) &&
     offer.services.some(service => lead.services.includes(service)) &&
     (!offer.customer_segments.length || offer.customer_segments.some(segment => lead.customer_type.includes(segment)));
 }

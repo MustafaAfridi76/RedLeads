@@ -337,7 +337,7 @@ function ThemeButton() {
     localStorage.setItem("redleads-theme", dark ? "dark" : "light");
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", dark ? "#0b0d1c" : "#f4f7fc");
+      ?.setAttribute("content", dark ? "#172448" : "#e8f0ff");
   }, [dark]);
   return (
     <button
@@ -997,12 +997,6 @@ function Home() {
             Analytics
           </button>
         </Glass>
-        <Link to="/log" className="log-lead-cta">
-          <span>
-            <Mic size={22} />
-          </span>
-          Log lead <ArrowRight size={19} />
-        </Link>
         {tab === "active" ? (
           <>
             <div className="list-head">
@@ -1154,6 +1148,12 @@ function Home() {
         ) : (
           <AnalyticsTab leads={leads} />
         )}
+        <Link to="/log" className="log-lead-cta">
+          <span>
+            <Mic size={22} />
+          </span>
+          Log lead <ArrowRight size={19} />
+        </Link>
       </main>
       {selected && (
         <LeadSheet

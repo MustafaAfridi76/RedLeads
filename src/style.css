@@ -4,6 +4,7 @@
     sans-serif;
   color-scheme: light;
   --background: #f4f7fc;
+  --screen-background: radial-gradient(ellipse 120% 90% at 16% 0%, #e8f0ff 0%, #f4f7fc 70%);
   --foreground: #171b2e;
   --card: rgba(255, 255, 255, 0.64);
   --border: rgba(255, 255, 255, 0.82);
@@ -17,6 +18,7 @@
 .dark {
   color-scheme: dark;
   --background: #0b0d1c;
+  --screen-background: radial-gradient(ellipse 120% 90% at 16% 0%, #172448 0%, #11152e 44%, #0b0d1c 100%);
   --foreground: #f5f7ff;
   --card: rgba(255, 255, 255, 0.055);
   --border: rgba(255, 255, 255, 0.12);
@@ -31,12 +33,12 @@
   box-sizing: border-box;
 }
 html {
-  background: var(--background);
+  background: var(--screen-background);
 }
 body {
   margin: 0;
   color: var(--foreground);
-  background: var(--background);
+  background: var(--screen-background);
   min-width: 320px;
 }
 #root {
@@ -76,7 +78,7 @@ textarea {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  background: var(--background);
+  background: var(--screen-background);
   z-index: 0;
 }
 .orb {
@@ -195,14 +197,11 @@ textarea {
   height: 48px;
 }
 .topbar {
-  position: sticky;
-  top: 0;
-  z-index: 15;
+  position: relative;
+  z-index: 2;
   margin: 0 -16px;
-  padding: calc(max(env(safe-area-inset-top, 0px), 12px) + 8px) 17px 12px;
-  background: color-mix(in srgb, var(--background) 93%, transparent);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 17px 12px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -253,6 +252,9 @@ textarea {
 }
 .page {
   padding: 19px 0 calc(32px + env(safe-area-inset-bottom, 0px));
+}
+.page.home {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
 .page h1 {
   font-size: clamp(33px, 8vw, 51px);
@@ -720,30 +722,34 @@ textarea {
   box-shadow: 0 10px 25px #7c3aed40;
 }
 .log-lead-cta {
-  width: 100%;
-  min-height: 58px;
-  margin: -7px 0 22px;
-  padding: 7px 18px 7px 7px;
+  position: fixed;
+  z-index: 12;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  min-height: 64px;
+  width: max-content;
+  padding: 7px 22px 7px 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  border-radius: 20px;
+  gap: 13px;
+  border-radius: 999px;
   background: linear-gradient(100deg, #3b82f6, #7c3aed);
   color: #fff;
   font-weight: 800;
   font-size: 15px;
   white-space: nowrap;
-  box-shadow: 0 12px 30px -13px #7c3aedb0;
+  box-shadow: 0 15px 35px #7c3aed70;
   border: 1px solid #ffffff38;
   transition: transform 0.2s;
 }
 .log-lead-cta:hover {
-  filter: brightness(1.08);
+  transform: translateX(-50%) scale(1.04);
 }
 .log-lead-cta span {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: #ffffff30;
   display: grid;

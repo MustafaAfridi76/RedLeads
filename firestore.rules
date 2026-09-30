@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function offerManager() {
+      return signedIn() && request.auth.uid == 'nmc60HzQVMbmejGjDIkNs2yOz8t1';
+    }
+    function ownsLead(leadId) {
+      return signedIn() &&
+        get(/databases/$(database)/documents/leads/$(leadId)).data.userId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow create, read, update: if signedIn() && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    match /leads/{leadId} {
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow update: if signedIn() && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId;
+
+      match /activity/{activityId} {
+        allow read, create, update, delete: if ownsLead(leadId);
+      }
+    }
+
+    // All authenticated reps can read offers; only the named manager edits them.
+    match /offers/{offerId} {
+      allow read: if signedIn();
+      allow create, update, delete: if offerManager();
+    }
+  }
+}

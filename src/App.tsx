@@ -170,7 +170,7 @@ function BrandMark({ large = false }: { large?: boolean }) {
   return (
     <div className={`brandmark ${large ? "large" : ""}`}>
       <img
-        src="/redleads-icon.svg"
+        src="/logo-mark.png"
         alt=""
         width={large ? 48 : 38}
         height={large ? 48 : 38}
@@ -840,7 +840,7 @@ function TopBar() {
       <Link to="/" className="topbrand">
         <img
           className="topbrand-tile"
-          src="/redleads-icon.svg"
+          src="/logo-mark.png"
           alt=""
           width="38"
           height="38"

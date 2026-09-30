@@ -76,13 +76,11 @@ import {
   XCircle,
 } from "lucide-react";
 import {
-  GoogleAuthProvider,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
-  signInWithPopup,
   signOut,
   updateProfile,
   type User,
@@ -383,18 +381,6 @@ function Login() {
       setBusy(false);
     }
   }
-  async function google() {
-    setBusy(true);
-    setError("");
-    try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      navigate("/");
-    } catch (cause) {
-      setError(err(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
   return (
     <AuthLayout>
       <div className="eyebrow">WELCOME BACK</div>
@@ -434,9 +420,6 @@ function Login() {
           {busy ? "Signing in…" : "Sign in"} <ArrowRight size={18} />
         </GradientButton>
       </form>
-      <button className="secondary-wide" disabled={busy} onClick={google}>
-        Continue with Google
-      </button>
       <div className="auth-links">
         <Link to="/forgot-password">Forgot password?</Link>
         <span>

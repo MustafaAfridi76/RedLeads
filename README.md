@@ -35,4 +35,8 @@ AI extraction can still misread a new rate sheet's prices or eligibility. Review
 
 ## Deploy
 
-The `firebase.json` Hosting configuration serves `dist` and rewrites client routes to `index.html`. Build with `npm run build`, then deploy Hosting and the reviewed Firestore rules with the Firebase CLI. Set the App Check site key before building for production.
+The production app is hosted on Vercel at `https://red-leads.vercel.app`. Vercel imports the `main` branch of `MustafaAfridi76/RedLeads`, builds with the Vite preset, and publishes `dist`. `vercel.json` rewrites client routes to `index.html` so direct links and refreshes work.
+
+Vercel's Production environment has `VITE_FIREBASE_APPCHECK_SITE_KEY` configured. Its public reCAPTCHA Enterprise site key is restricted to `red-leads.vercel.app` and registered with the Firebase web app under App Check. The same domain is allowed in Firebase Authentication. Future pushes to `main` trigger production deployments automatically.
+
+Email and password sign-in is enabled. Google sign-in remains disabled in Firebase pending a public support email; the app hides that option until it is configured. The `firebase.json` Hosting configuration is available if Firebase Hosting is used later.

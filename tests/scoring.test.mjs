@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scoreFingerprint, strictBudget, planSummary } from '../src/scoring.ts';
+import { scoreFingerprint, strictBudget, planSummary, missesStrictBudget } from '../src/scoring.ts';
 
 const offer = {
   id: 'plan-1', title: 'Bell EPP BYOD Select 60GB', description: '60GB Canada data',
@@ -24,4 +24,6 @@ test('plan summary uses the verified Line 1 AutoPay price', () => {
   assert.equal(planSummary(offer), 'Bell EPP BYOD Select 60GB · $45/mo with AutoPay');
   assert.equal(strictBudget('Needs a plan under $45'), 45);
   assert.equal(strictBudget('Wants a good deal'), null);
+  assert.equal(missesStrictBudget({ ...lead, transcript: 'Needs a plan under $45' }, offer), true);
+  assert.equal(missesStrictBudget({ ...lead, transcript: 'Needs a plan under $50' }, offer), false);
 });

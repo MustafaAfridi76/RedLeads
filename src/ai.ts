@@ -10,7 +10,7 @@ import {
   type Offer,
 } from "./domain";
 import { saveLeadScore } from "./data";
-import { scoreFingerprint, strictBudget } from "./scoring";
+import { missesStrictBudget, scoreFingerprint, strictBudget } from "./scoring";
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
 const modelName =
@@ -139,8 +139,8 @@ export async function scoreLeads(
         .filter((offer, index, all): offer is Offer => Boolean(offer) && all.findIndex(other => other?.id === offer?.id) === index)
         .slice(0, 2);
       const budget = strictBudget(lead.transcript);
-      const bestPrice = selected.length ? Number(offerLineOnePrice(selected[0])?.match(/\d+(?:\.\d+)?/)?.[0]) : NaN;
-      const budgetMiss = budget !== null && Number.isFinite(bestPrice) && bestPrice >= budget;
+      const bestPrice = selected.length ? offerLineOnePrice(selected[0]) : null;
+      const budgetMiss = selected.length ? missesStrictBudget(lead, selected[0]) : false;
       if (budgetMiss) score = Math.min(score, 74);
       if (!selected.length && !lead.services.includes("multiline")) score = Math.min(score, 74);
       await saveLeadScore(lead, {
@@ -152,7 +152,9 @@ export async function scoreLeads(
         matched_offers: selected.map(offer => offer.title),
         matched_offer_ids: selected.map(offer => offer.id),
         keywords,
-        close_requirements: clipped(item.close_requirements, 150),
+        close_requirements: budgetMiss
+          ? `Needs a plan below $${budget}; the closest verified offer is ${bestPrice} and misses that target.`
+          : clipped(item.close_requirements, 150),
         score_fingerprint: fingerprints.get(lead.id) || "",
       });
       updated++;
@@ -170,8 +172,7 @@ export async function generateLeadMessage(lead: Lead, offers: Offer[], repFirstN
   const verifiedPrice = matched ? offerLineOnePrice(matched) : null;
   const planName = matched?.title.replace(/^(?:Bell|Virgin Plus)\s+/i, "").slice(0, 105) || "";
   const budget = strictBudget(lead.transcript);
-  const priceAmount = Number(verifiedPrice?.match(/\d+(?:\.\d+)?/)?.[0]);
-  const nearMiss = budget !== null && Number.isFinite(priceAmount) && priceAmount >= budget;
+  const nearMiss = matched ? missesStrictBudget(lead, matched) : false;
   const offerOpening = matched && verifiedPrice
     ? `${nearMiss ? "The closest current option I found is" : "The"} ${planName} at ${verifiedPrice} with AutoPay${nearMiss ? `, which is above your under-$${budget} target` : ""}. `
     : "";

@@ -134,7 +134,7 @@ import {
   watchOffers,
 } from "./data";
 import { generateLeadMessage, scoreLeads, testAI } from "./ai";
-import { planSummary, scoreFingerprint } from "./scoring";
+import { missesStrictBudget, planSummary, scoreFingerprint } from "./scoring";
 import { readImportDraft, saveImportDraft, type ImportDraft } from './pdfDraft';
 import { useDictation } from "./useDictation";
 import "./style.css";
@@ -1181,7 +1181,7 @@ function LeadCard({ lead, offers, onOpen }: { lead: Lead; offers: Offer[]; onOpe
               <BrandBadge brand={lead.brand} />
             </div>
             <p>{lead.heat_reason || "Matching against today's offers…"}</p>
-            {bestOffer && <small className="lead-best-offer">Best offer: {planSummary(bestOffer)}</small>}
+            {bestOffer && <small className="lead-best-offer">{missesStrictBudget(lead, bestOffer) ? "Closest offer" : "Best offer"}: {planSummary(bestOffer)}</small>}
             <div className="lead-meta">
               {lead.services.slice(0, 3).map((s) => (
                 <span key={s} title={SERVICES.find((x) => x.id === s)?.label}>
@@ -1598,7 +1598,7 @@ function LeadSheet({
             <p>{lead.heat_reason || "Matching against today's offers…"}</p>
             {matchedOffers.length > 0 && (
               <div className="insight-offers">
-                <small>{matchedOffers.length === 1 ? "Matching offer" : "Matching offers"} · Line 1 with AutoPay</small>
+                <small>{missesStrictBudget(lead, matchedOffers[0]) ? "Closest offer" : matchedOffers.length === 1 ? "Matching offer" : "Matching offers"} · Line 1 with AutoPay</small>
                 {matchedOffers.map(offer => (
                   <div className="insight-offer" key={offer.id}>
                     <strong>{offer.title}</strong>

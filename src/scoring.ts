@@ -1,7 +1,7 @@
 import { offerLineOnePrice, relevantOffers, todayStr, toDate, type Lead, type Offer } from "./domain.ts";
 
 // Bump this when the matching prompt or score policy changes.
-export const SCORE_POLICY_VERSION = 3;
+export const SCORE_POLICY_VERSION = 4;
 
 export function scoreFingerprint(lead: Lead, offers: Offer[], date = todayStr()) {
   const snapshot = JSON.stringify({
@@ -45,7 +45,7 @@ export function planSummary(offer: Offer) {
 }
 
 export function strictBudget(notes: string): number | null {
-  const match = notes.match(/\b(?:under|below|less than)\s*\$?\s*(\d{2,3})(?:\.\d{1,2})?\s*\$?/i);
+  const match = notes.match(/\b(?:under|uonder|below|less than|less then)\s*\$?\s*(\d{2,3})(?:\.\d{1,2})?\s*\$?/i);
   return match ? Number(match[1]) : null;
 }
 

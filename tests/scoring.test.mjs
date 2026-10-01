@@ -23,6 +23,7 @@ test('an unchanged lead and offer snapshot keeps the same score fingerprint', ()
 test('plan summary uses the verified Line 1 AutoPay price', () => {
   assert.equal(planSummary(offer), 'Bell EPP BYOD Select 60GB · $45/mo with AutoPay');
   assert.equal(strictBudget('Needs a plan under $45'), 45);
+  assert.equal(strictBudget('trying to keep it uonder 50$'), 50);
   assert.equal(strictBudget('Wants a good deal'), null);
   assert.equal(missesStrictBudget({ ...lead, transcript: 'Needs a plan under $45' }, offer), true);
   assert.equal(missesStrictBudget({ ...lead, transcript: 'Needs a plan under $50' }, offer), false);

@@ -1210,13 +1210,13 @@ function LeadCard({ lead, offers, onOpen }: { lead: Lead; offers: Offer[]; onOpe
             onClick={() => setMessageOpen(true)}
             aria-label={`Draft a message for ${lead.customer_name}`}
           >
-            <MessageCircle size={18} /> <span>Message</span>
+            <MessageCircle size={20} />
           </button>
           <a
             href={`tel:${lead.phone}`}
             aria-label={`Call ${lead.customer_name}`}
           >
-            <Phone size={18} /> <span>Call</span>
+            <Phone size={20} />
           </a>
         </div>
       </Glass>
@@ -1580,12 +1580,7 @@ function LeadSheet({
           <button
             className="action-pill"
             disabled={scoring}
-            onClick={() => {
-              void refreshScores([lead.id]).then((ok) => {
-                if (ok)
-                  void logActivity(lead, "rescore", "Heat score refreshed");
-              });
-            }}
+            onClick={() => void refreshScores([lead.id])}
           >
             <Flame size={16} /> Re-score
           </button>

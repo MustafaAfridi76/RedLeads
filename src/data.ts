@@ -195,7 +195,7 @@ export function watchActivity(
     ),
     (snap) =>
       onData(
-        snap.docs.map((d) => ({
+        snap.docs.filter((d) => d.data().type !== "rescore" && d.data().note !== "Heat score refreshed").map((d) => ({
           id: d.id,
           lead_id: lead.id,
           type: d.data().type,

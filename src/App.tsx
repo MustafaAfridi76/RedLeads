@@ -134,6 +134,7 @@ import {
   watchOffers,
 } from "./data";
 import { generateLeadMessage, scoreLeads, testAI } from "./ai";
+import { planSummary, scoreFingerprint } from "./scoring";
 import { readImportDraft, saveImportDraft, type ImportDraft } from './pdfDraft';
 import { useDictation } from "./useDictation";
 import "./style.css";
@@ -774,12 +775,12 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
     setScoring(true);
     setScoreStatus("Matching leads to offers…");
     try {
-      const count = await scoreLeads(items, offers, (done, total) =>
+      const result = await scoreLeads(items, offers, (done, total) =>
         setScoreStatus(`Scored ${done} of ${total} leads…`),
       );
-      setScoreStatus(`${count} heat score${count === 1 ? "" : "s"} updated`);
-      if (count) notify(`${count} heat score${count === 1 ? "" : "s"} updated`);
-      return count > 0;
+      setScoreStatus(result.updated ? `${result.updated} heat score${result.updated === 1 ? "" : "s"} updated` : "Scores are current");
+      notify(result.updated ? `${result.updated} heat score${result.updated === 1 ? "" : "s"} updated` : "Scores are current; no lead or offer data changed.");
+      return result.updated > 0;
     } catch (error) {
       setScoreStatus("Scoring failed");
       notify(err(error), "error");
@@ -792,7 +793,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
     if (!leadsReady || !offersReady || scoredOnMount.current) return;
     scoredOnMount.current = true;
     const stale = leads
-      .filter((l) => l.status === "active" && l.scored_date !== todayStr())
+      .filter((l) => l.status === "active" && (l.heat_score === null || l.score_fingerprint !== scoreFingerprint(l, offers)))
       .slice(0, 40);
     if (stale.length) void refreshScores(stale.map((l) => l.id));
   }, [leadsReady, offersReady]);
@@ -1113,7 +1114,7 @@ function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i, 12) * 0.04 }}
                   >
-                    <LeadCard lead={lead} onOpen={() => setOpenId(lead.id)} />
+                    <LeadCard lead={lead} offers={offers} onOpen={() => setOpenId(lead.id)} />
                   </motion.div>
                 ))}
                 {visible.length > 50 && (
@@ -1166,8 +1167,9 @@ function Home() {
     </>
   );
 }
-function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
+function LeadCard({ lead, offers, onOpen }: { lead: Lead; offers: Offer[]; onOpen: () => void }) {
   const [messageOpen, setMessageOpen] = useState(false);
+  const bestOffer = offers.find(offer => (lead.matched_offer_ids[0] ? offer.id === lead.matched_offer_ids[0] : offer.title === lead.matched_offer) && offerMatchesLead(offer, lead) && relevantOffers([offer]).length && offerLineOnePrice(offer));
   return (
     <>
       <Glass className="lead-card">
@@ -1179,6 +1181,7 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
               <BrandBadge brand={lead.brand} />
             </div>
             <p>{lead.heat_reason || "Matching against today's offers…"}</p>
+            {bestOffer && <small className="lead-best-offer">Best offer: {planSummary(bestOffer)}</small>}
             <div className="lead-meta">
               {lead.services.slice(0, 3).map((s) => (
                 <span key={s} title={SERVICES.find((x) => x.id === s)?.label}>
@@ -1463,8 +1466,8 @@ function LeadSheet({
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
-  const matchedOffers = (lead.matched_offers.length ? lead.matched_offers : [lead.matched_offer])
-    .map(title => offers.find(offer => offer.title === title && offerMatchesLead(offer, lead) && relevantOffers([offer]).length && offerLineOnePrice(offer)))
+  const matchedOffers = (lead.matched_offer_ids.length ? lead.matched_offer_ids : lead.matched_offers.length ? lead.matched_offers : [lead.matched_offer])
+    .map(key => offers.find(offer => (lead.matched_offer_ids.length ? offer.id === key : offer.title === key) && offerMatchesLead(offer, lead) && relevantOffers([offer]).length && offerLineOnePrice(offer)))
     .filter((offer): offer is Offer => Boolean(offer))
     .slice(0, 2);
   useEffect(() => {
@@ -1894,7 +1897,7 @@ function LeadWizard({ edit = false }: { edit?: boolean }) {
           try {
             const savedLead = await loadSavedLead();
             const scored = await scoreLeads([savedLead], offers);
-            if (scored !== 1) throw new Error("AI did not return a score for this lead.");
+            if (scored.updated !== 1 && scored.unchanged !== 1) throw new Error("AI did not return a score for this lead.");
             notify(edit ? "Lead updated and re-scored." : "Lead logged and scored.");
           } catch (cause) {
             notify(`Lead saved, but scoring failed: ${err(cause)}`, "error");

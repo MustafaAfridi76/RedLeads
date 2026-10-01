@@ -103,7 +103,11 @@ export function asLead(id: string, data: DocumentData): Lead {
     matched_offers: Array.isArray(data.matched_offers)
       ? data.matched_offers.filter((title: unknown): title is string => typeof title === "string").slice(0, 2)
       : data.matched_offer ? [data.matched_offer] : [],
+    matched_offer_ids: Array.isArray(data.matched_offer_ids)
+      ? data.matched_offer_ids.filter((id: unknown): id is string => typeof id === "string").slice(0, 2)
+      : [],
     scored_date: data.scored_date || "",
+    score_fingerprint: data.score_fingerprint || "",
     status: (["active", "won", "lost"].includes(data.status)
       ? data.status
       : oldStatus) as LeadStatus,
@@ -235,7 +239,9 @@ export async function createLead(input: LeadInput) {
     heat_reason: "",
     matched_offer: "",
     matched_offers: [],
+    matched_offer_ids: [],
     scored_date: "",
+    score_fingerprint: "",
     status: "active",
     outcome_reason: "",
     last_message: "",
@@ -252,6 +258,7 @@ export async function updateLead(lead: Lead, input: LeadInput) {
     email: input.email.trim(),
     transcript: input.transcript.trim(),
     scored_date: "",
+    score_fingerprint: "",
     updatedAt: serverTimestamp(),
   });
 }
@@ -292,8 +299,10 @@ export async function saveLeadScore(
     heat_reason: string;
     matched_offer: string;
     matched_offers: string[];
+    matched_offer_ids: string[];
     keywords: string[];
     close_requirements: string;
+    score_fingerprint: string;
   },
   date = todayStr(),
 ) {

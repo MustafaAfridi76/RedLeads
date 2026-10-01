@@ -28,7 +28,9 @@ export type Lead = {
   heat_reason: string;
   matched_offer: string;
   matched_offers: string[];
+  matched_offer_ids: string[];
   scored_date: string;
+  score_fingerprint: string;
   status: LeadStatus;
   outcome_reason: string;
   last_message: string;

@@ -760,7 +760,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
   }, [user.uid]);
   useEffect(() => {
     if (!toast) return;
-    const timer = setTimeout(() => setToast(null), 5000);
+    const timer = setTimeout(() => setToast(null), toast.tone === "error" ? 20000 : 5000);
     return () => clearTimeout(timer);
   }, [toast]);
   function notify(message: string, tone: "success" | "error" = "success") {
@@ -782,7 +782,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
       notify(result.updated ? `${result.updated} heat score${result.updated === 1 ? "" : "s"} updated` : "Scores are current; no lead or offer data changed.");
       return result.updated > 0;
     } catch (error) {
-      setScoreStatus("Scoring failed");
+      setScoreStatus(`Scoring failed: ${err(error)}`);
       notify(err(error), "error");
       return false;
     } finally {

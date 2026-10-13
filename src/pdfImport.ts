@@ -1,16 +1,11 @@
 import { PDFDocument } from 'pdf-lib';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
-import { app } from './firebase';
+import { generateAIContent } from './aiClient';
 import { cleanOfferInput } from './data';
 import { isSupportedOffer, type OfferInput } from './domain';
 import { readImportDraft, saveImportDraft, type ImportDraft } from './pdfDraft';
 import { supportedCodesFromPage, type PdfCell } from './pdfRows';
-const model = getGenerativeModel(getAI(app, {backend:new GoogleAIBackend()}), {
-  model: import.meta.env.VITE_FIREBASE_AI_MODEL || 'gemini-3.5-flash-lite',
-  generationConfig: {responseMimeType:'application/json', maxOutputTokens:16384, temperature:0.1},
-});
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 function missingCodes(expected: string[], offers: OfferInput[]) {
   const found = offers.map(offer => offer.plan_code?.toUpperCase() || '');
@@ -91,7 +86,7 @@ Rules:
     for(let attempt=0;attempt<3;attempt++) {
       try {
         const correction=attempt ? `\nPrevious attempt missed or invalidated these supported SOC rows: ${JSON.stringify(missingCodes(expected,next))}. Re-read the complete page and return all supported rows, including repeated codes with different eligibility.` : '';
-        const response=await model.generateContent([prompt+correction,{inlineData:{data,mimeType:'application/pdf'}}],{timeout:90000,signal});
+        const response=await generateAIContent([prompt+correction,{inlineData:{data,mimeType:'application/pdf'}}],{timeoutMs:90000,signal,generationConfig:{responseMimeType:'application/json',maxOutputTokens:16384,temperature:0.1}});
         parsed=parseResult(response.response.text());
         if(!Array.isArray(parsed.offers)) throw new Error('AI did not return an offers array. Retry this PDF to resume.');
         next=[];

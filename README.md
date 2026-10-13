@@ -19,7 +19,7 @@ Open the Vite URL and sign in using the existing Firebase account. `npm run buil
 - Activity history, won/lost reasons, analytics, and account settings
 - Existing lead records from the earlier Firebase app remain readable
 
-The default model is `gemini-3.5-flash-lite`. Override it with `VITE_FIREBASE_AI_MODEL` in `.env.local` if needed. A local App Check debug token is registered for this browser; it stays in browser storage and is not part of the source code. Before a production deployment, register its domain with reCAPTCHA Enterprise and Firebase App Check, then set `VITE_FIREBASE_APPCHECK_SITE_KEY` to that site's public key for the build.
+The default model is `gemini-3.8-flash`. Override it with `VITE_FIREBASE_AI_MODEL` in `.env.local` if needed. Scoring, messages, connection tests, and PDF extraction share bounded requests with fallback to `gemini-3.5-flash-lite` and `gemini-3.1-flash-lite` for transient provider failures. Authentication and App Check errors are surfaced immediately. A local App Check debug token is registered for this browser; it stays in browser storage and is not part of the source code. Before a production deployment, register its domain with reCAPTCHA Enterprise and Firebase App Check, then set `VITE_FIREBASE_APPCHECK_SITE_KEY` to that site's public key for the build.
 
 ## Firestore access
 
